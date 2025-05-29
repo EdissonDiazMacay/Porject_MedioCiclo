@@ -1,0 +1,531 @@
+{% extends "index.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+{% endblock %}
+
+{% block body %}
+<section class="content-header">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>{{data.cliente.2}} {{data.cliente.3}}</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="content">
+        <div class="col-12 col-sm-12">
+            <div class="card card-primary card-outline card-outline-tabs">
+              <div class="card-header p-0 border-bottom-0">
+                <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="custom-tabs-four-home-tab" data-toggle="pill" href="#custom-tabs-four-home" role="tab" aria-controls="custom-tabs-four-home" aria-selected="true">Información Personal</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-four-profile-tab" data-toggle="pill" href="#custom-tabs-four-profile" role="tab" aria-controls="custom-tabs-four-profile" aria-selected="false">Historial de Deudas</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-four-messages-tab" data-toggle="pill" href="#custom-tabs-four-messages" role="tab" aria-controls="custom-tabs-four-messages" aria-selected="false">Historial de Pagos</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-four-settings-tab" data-toggle="pill" href="#custom-tabs-four-settings" role="tab" aria-controls="custom-tabs-four-settings" aria-selected="false">Registrar Pago</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-four-settings-tab1" data-toggle="pill" href="#custom-tabs-four-settings1" role="tab" aria-controls="custom-tabs-four-settings1" aria-selected="false">Registrar Deuda</a>
+                  </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="custom-tabs-four-tabContent">
+                    <div class="tab-pane fade show active" id="custom-tabs-four-home" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+                        <form id="formularioCliente">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="inputNumeroCedula">Número de cedula</label>
+                                    <input type="text" value="{{data.cliente.1}}" class="form-control" id="inputNumeroCedula" placeholder="Ingrese el número de cedula" disabled>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="inputNombres">Nombres</label>
+                                    <input type="text" value="{{data.cliente.2}}" class="form-control" id="inputNombres" placeholder="Ingrese los Nombres">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="inputApellidos">Apellidos</label>
+                                    <input type="text" value="{{data.cliente.3}}" class="form-control" id="inputApellidos" placeholder="Ingrese los apellidos">
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cliente-modal-guardar">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="custom-tabs-four-profile" role="tabpanel" aria-labelledby="custom-tabs-four-profile-tab">
+                        <table id="tbHsitorialDeudas" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Monto</th>
+                                    <th>Descripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for var in data.historialDeudas %}
+                                    <tr>
+                                        <td>{{var.1}}</td>
+                                        <td>{{var.2}}</td>
+                                        <td>
+                                            <center>
+                                                <!--data-toggle="modal" data-target="#deuda-modal-guardar"-->
+                                                <button class="btn btn-sm btn-info" onclick="modalEditarDeuda('{{var.3}}', '{{var.1}}', '{{var.2}}')"><i class="menu-icon icon-pencil"></i>Editar</button>
+                                                <button class="btn btn-sm btn-danger" onclick="modalEliminarDeuda('{{var.3}}')"><i class="menu-icon icon-pencil"></i>Eliminar</button>
+                                            </center>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Monto</th>
+                                    <th>Descripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade" id="custom-tabs-four-messages" role="tabpanel" aria-labelledby="custom-tabs-four-messages-tab">
+                        <table id="tbHsitorialPagos" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Monto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for var in data.historialPagos %}
+                                    <tr>
+                                        <td>{{var.1}}</td>
+                                        <td>
+                                            <center>
+                                                <button class="btn btn-sm btn-info" onclick="modalEditarPago('{{var.2}}', '{{var.1}}')"><i class="menu-icon icon-pencil"></i>Editar</button>
+                                                <button class="btn btn-sm btn-danger" onclick="modalEliminarPago('{{var.2}}')"><i class="menu-icon icon-pencil"></i>Eliminar</button>
+                                            </center>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Monto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel" aria-labelledby="custom-tabs-four-settings-tab">
+                        <form>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="inputUNK">Adeuda</label>
+                                    <input type="email" value="{{data.cliente.4}}" class="form-control" id="inputUNK" disabled>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="inputVALUE">Monto a Pagar</label>
+                                    <input type="number" value="0" class="form-control" id="inputVALUE" placeholder="Ingrese el monto">
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#deuda-modal-pago">Verificar Pago</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="custom-tabs-four-settings1" role="tabpanel" aria-labelledby="custom-tabs-four-settings-tab1">
+                        <form>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="inputDDeudaMonto">Monto</label>
+                                    <input type="number" value="0" class="form-control" id="inputDDeudaMonto" placeholder="Ingrese el monto">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="inputDDeudaDescripcion">Descripción</label>
+                                    <input type="text" class="form-control" id="inputDDeudaDescripcion" placeholder="Ingrese la descripción">
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#deuda-modal-guardar">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
+
+<div class="modal fade" id="cliente-modal-guardar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Confirmación de cambios</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Esta seguro de querer guardar los cambios realizados?
+            </p>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="aplicarCambiosCliente()">Aplicar Cambios</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deuda-modal-guardar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Confirmación de Cambios</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Esta seguro de registrar la deuda?
+            </p>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="registrarDeuda()">Si</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deuda-modal-pago">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Confirmación de Pago</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Esta seguro de registrar el pago?
+            </p>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="registrarPago()">Si</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deuda-modal-eliminar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Confirmación de eliminación de deuda</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Esta seguro de eliminar la deuda?
+            </p>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="eliminarDeuda()">Si</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pago-modal-eliminar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Confirmación de eliminación de pago</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Esta seguro de eliminar el pago?
+            </p>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="eliminarPago()">Si</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pago-modal-editar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Actualización del Pago</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="inputCodeUn">Código</label>
+                        <input type="text" value="{{data.cliente.4}}" class="form-control" id="inputCodeUn" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputNewVluae">Monto a Pagar</label>
+                        <input type="number" value="0" class="form-control" id="inputNewVluae" placeholder="Ingrese el monto">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="modificarPago()">Guardar Cambios</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deuda-modal-editar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Actualización de Deuda</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="inputActualizacionDeudaCodigo">Código</label>
+                        <input type="text" value="{{data.cliente.4}}" class="form-control" id="inputActualizacionDeudaCodigo" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputActualizacionDeudaMonto">Monto a Pagar</label>
+                        <input type="number" value="0" class="form-control" id="inputActualizacionDeudaMonto" placeholder="Ingrese el monto">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputActualizacionDeudaDescripcion">Descripción</label>
+                        <input type="text" class="form-control" id="inputActualizacionDeudaDescripcion" placeholder="Ingrese la descripción">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="modificarDeuda()">Guardar Cambios</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+
+<script>
+    deudaSeleccionada = 0
+    pagoSeleccionado = 0
+
+    function aplicarDataTable(name){
+        $(name).DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    }
+
+    aplicarDataTable('#tbHsitorialDeudas')
+    aplicarDataTable('#tbHsitorialPagos')
+
+    function aplicarCambiosCliente(id){
+        $.ajax({
+            url: "/clientes2/{{data.cliente.0}}",
+            method: 'POST',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "cedula": document.getElementById("inputNumeroCedula").value,
+                "nombres": document.getElementById("inputNombres").value,
+                "apellidos": document.getElementById("inputApellidos").value,
+            }),
+            success: function(data){
+                window.location.reload()
+            },
+        })
+    }
+
+    function registrarDeuda(){
+        $.ajax({
+            url: "/deuda",
+            method: 'POST',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "monto": document.getElementById("inputDDeudaMonto").value,
+                "desc": document.getElementById("inputDDeudaDescripcion").value,
+                "id_cliente": "{{data.cliente.0}}",
+            }),
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+    function registrarPago (){
+        $.ajax({
+            url: "/pago",
+            method: 'POST',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "monto": document.getElementById("inputVALUE").value,
+                "id_cliente": "{{data.cliente.0}}",
+            }),
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+    function modalEliminarPago(id){
+        pagoSeleccionado = id
+        $("#pago-modal-eliminar").modal('show')
+    }
+
+    function modalEditarPago(id, valor){
+        pagoSeleccionado = id
+        document.getElementById('inputCodeUn').value = id
+        document.getElementById('inputNewVluae').value = valor
+        $("#pago-modal-editar").modal('show')
+    }
+
+    function modificarPago(){
+        $.ajax({
+            url: "/modificar-pago/"+pagoSeleccionado,
+            method: 'POST',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "monto": document.getElementById("inputNewVluae").value
+            }),
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+    function modificarDeuda(){
+        $.ajax({
+            url: "/modificar-deuda/"+deudaSeleccionada,
+            method: 'POST',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "monto": document.getElementById("inputActualizacionDeudaMonto").value,
+                "desc": document.getElementById("inputActualizacionDeudaDescripcion").value
+            }),
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+    function modalEditarDeuda(id, valor, desc){
+        deudaSeleccionada = id
+        document.getElementById('inputActualizacionDeudaCodigo').value = id
+        document.getElementById('inputActualizacionDeudaMonto').value = valor
+        document.getElementById('inputActualizacionDeudaDescripcion').value = desc
+        $("#deuda-modal-editar").modal('show')
+    }
+
+    function modalEliminarDeuda(id){
+        deudaSeleccionada = id
+        $("#deuda-modal-eliminar").modal('show')
+    }
+
+    function eliminarDeuda(){
+        $.ajax({
+            url: "/eliminar-deuda/"+deudaSeleccionada,
+            method: 'POST',
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+    function eliminarPago(){
+        $.ajax({
+            url: "/eliminar-pago/"+pagoSeleccionado,
+            method: 'POST',
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "index.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+{% endblock %}
+
+{% block body %}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Listado de Clientes</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="card">
+        <div class="card-header">
+        </div>
+        <div class="card-body">
+            <table id="example2" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Cédula</th>
+                        <th>Nombres y Apellidos</th>
+                        <th>Adeuda</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for var in clientes %}
+                    <tr>
+                        <td>{{var.1}}</td>
+                        <td>{{var.2}} {{var.3}}</td>
+                        <td>{{var.4}}</td>
+                        <td>
+                            <center>
+                                <a href="clientes/{{var.0}}" class="btn btn-sm btn-info"> <i class="menu-icon icon-pencil"></i>VER</a>
+                                <button class="btn btn-sm btn-danger" onclick="modalEliminarCliente('{{var.0}}')"><i class="menu-icon icon-pencil"></i>Eliminar</button>
+                            </center>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Cédula</th>
+                        <th>Nombres y Apellidos</th>
+                        <th>Adeuda</th>
+                        <th>Acciones</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="card-footer"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+        </div>
+        <div class="card-body">
+            <form>
+
+                    <div class="form-group">
+                        <label for="inputDNI">Número de cedula</label>
+                        <input type="text" value="" class="form-control" id="inputDNI" placeholder="Ingrese el número de cedula">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputNAME">Nombres</label>
+                        <input type="text" class="form-control" id="inputNAME" placeholder="Ingrese los nombres">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputLASTNAME">Apellidos</label>
+                        <input type="text" class="form-control" id="inputLASTNAME" placeholder="Ingrese los apellidos">
+                    </div>
+
+            </form>
+        </div>
+        <div class="card-footer">
+        <button type="button" class="btn btn-primary" onclick="crearCliente()">Crear Cliente</button>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="deuda-modal-eliminar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Confirmación de eliminación del cliente</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Esta seguro de eliminar el cliente?
+            </p>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="eliminarCliente()">Si</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+
+<script>
+    // Configuración de la tabla de listar clientes
+    $('#example2').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+        "rowCallback": function( row, data, index ) {
+            if ( data[2] == "0.0" ) {
+                $('td', row).addClass('bg-light');
+            }
+            else {
+                $('td', row).addClass('bg-danger');
+            }
+        }
+    });
+
+    clienteSeleccionado = 0
+    function modalEliminarCliente(id){
+        clienteSeleccionado = id
+        $("#deuda-modal-eliminar").modal("show")
+    }
+
+    function eliminarCliente(){
+        $.ajax({
+            url: "/clientes/"+clienteSeleccionado,
+            method: 'DELETE',
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+
+    function crearCliente(){
+        $.ajax({
+            url: "/clientes",
+            method: 'POST',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "cedula": document.getElementById("inputDNI").value,
+                "nombres": document.getElementById("inputNAME").value,
+                "apellidos": document.getElementById("inputLASTNAME").value,
+            }),
+            success: function(data){
+                window.location.reload()
+            },
+            error: function(er) {
+                console.log(er)
+            }
+        })
+    }
+</script>
+{% endblock %}
